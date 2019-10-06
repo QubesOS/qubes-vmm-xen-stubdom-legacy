@@ -1,0 +1,8 @@
+*.tgz
+*.tar.gz
+*.tar.bz2
+*.tar.*.sig*
+*.sign
+xen-?.?.?/
+deb/
+pkgs/
