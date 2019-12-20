@@ -53,6 +53,7 @@ Patch1002: patch-xen-no-downloads.patch
 Patch1004: patch-xen-stubdom-qubes-gui.patch
 Patch1005: patch-stubdom-lwip-fix-for-dhcp.patch
 
+BuildRequires: gcc
 BuildRequires: bison
 BuildRequires: flex
 BuildRequires: autoconf
