@@ -77,6 +77,7 @@ BuildRequires: dev86
 BuildRequires: /usr/include/gnu/stubs-32.h
 
 Provides: xen-hvm = %{epoch}:%{version}-%{release}
+Obsoletes: xen-hvm < 2001:4.13.0-0.1
 
 %description
 Legacy stubdom files for Xen
