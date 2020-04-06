@@ -29,6 +29,8 @@ Source34: @core-vchan-xen@
 Source35: @stubdom-dhcp@
 Source36: @gui-common@
 
+Patch600: patch-xen-gcc10-fixes.patch
+
 Patch610: patch-stubdom-gmp-compile-fix.patch
 Patch615: patch-hvmpt01-minios-exprom-size.patch
 Patch616: patch-hvmpt02-disable-msix-caps.patch
@@ -126,8 +128,8 @@ autoreconf
     --prefix=%{_prefix} \
     --libdir=%{_libdir} \
     --libexecdir=%{_libexecdir} \
-    --enable-vtpm-stubdom \
-    --enable-vtpmmgr-stubdom \
+    --disable-vtpm-stubdom \
+    --disable-vtpmmgr-stubdom \
     --disable-seabios \
     --disable-xen \
     --disable-docs \
@@ -198,8 +200,6 @@ rm -rf %{buildroot}
 %{_libexecdir}/xen/boot/ioemu-stubdom.gz
 %{_libexecdir}/xen/boot/xenstore-stubdom.gz
 %{_libexecdir}/xen/boot/pv-grub*.gz
-%{_libexecdir}/xen/boot/vtpm-stubdom.gz
-%{_libexecdir}/xen/boot/vtpmmgr-stubdom.gz
 
 %changelog
 @CHANGELOG@
