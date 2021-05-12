@@ -10,22 +10,19 @@ _specdir := $(if $(SPECDIR), $(SPECDIR), $(_sourcedir))
 _builddir := $(if $(BUILDDIR), $(BUILDDIR), $(_sourcedir))
 _srcrpmdir := $(if $(SRCRPMDIR), $(SRCRPMDIR), $(_sourcedir)/srpm)
 _rpmdir := $(if $(RPMDIR), $(RPMDIR), $(_sourcedir)/rpm)
-version := $(shell cat version)
-release := $(shell cat rel)
+version := $(or $(file <version),$(error Cannot determine version))
+release := $(or $(file <rel),$(error Cannot determine release))
 jobs := $(shell grep -c ^processor /proc/cpuinfo)
 
 def = --define "$(v) $(value $(v))"
 RPM_DEFINES := $(foreach v, _sourcedir _specdir _builddir _srcrpmdir _rpmdir version jobs, $(def))
 
-DIST_DOM0 ?= fc13
+DIST_DOM0 ?= fc32
 
-DISTFILES_MIRROR ?= http://ftp.qubes-os.org/distfiles/
+DISTFILES_MIRROR ?= https://ftp.qubes-os.org/distfiles/
 
-ifndef version
-$(error "You can not run this Makefile without having version defined")
-endif
-ifndef release
-$(error "You can not run this Makefile without having release defined")
+ifeq ($(FETCH_CMD),)
+$(error "You can not run this Makefile without having FETCH_CMD defined")
 endif
 
 all: help
@@ -36,17 +33,17 @@ UNTRUSTED_SUFF := .UNTRUSTED
 # signature file _and_ the file it signs for (assumed to be the basename).
 URLS := \
     https://downloads.xenproject.org/release/xen/${version}/xen-${version}.tar.gz.sig \
-    ftp://alpha.gnu.org/gnu/grub/grub-0.97.tar.gz.sig \
-    http://download.savannah.gnu.org/releases/lwip/older_versions/lwip-1.3.0.tar.gz.sig \
-    ftp://sources.redhat.com/pub/newlib/newlib-1.16.0.tar.gz \
-    http://www.kernel.org/pub/software/utils/pciutils/pciutils-2.2.9.tar.bz2 \
-    http://downloads.sourceforge.net/project/libpng/zlib/1.2.3/zlib-1.2.3.tar.gz \
-    http://caml.inria.fr/pub/distrib/ocaml-3.11/ocaml-3.11.0.tar.gz \
-    http://xenbits.xensource.com/xen-extfiles/gc.tar.gz \
-    http://sourceforge.net/projects/tpm-emulator.berlios/files/tpm_emulator-0.7.4.tar.gz \
-    ftp://ftp.gmplib.org/pub/archive/gmp-4.3.2/gmp-4.3.2.tar.bz2.sig \
-    http://polarssl.org/code/releases/polarssl-1.1.4-gpl.tgz \
-    http://xenbits.xensource.com/xen-extfiles/tboot-20090330.tar.gz
+    https://alpha.gnu.org/gnu/grub/grub-0.97.tar.gz.sig \
+    https://download.savannah.gnu.org/releases/lwip/older_versions/lwip-1.3.0.tar.gz.sig \
+    $(DISTFILES_MIRROR)/newlib-1.16.0.tar.gz \
+    https://www.kernel.org/pub/software/utils/pciutils/pciutils-2.2.9.tar.bz2 \
+    https://downloads.sourceforge.net/project/libpng/zlib/1.2.3/zlib-1.2.3.tar.gz \
+    https://caml.inria.fr/pub/distrib/ocaml-3.11/ocaml-3.11.0.tar.gz \
+    https://xenbits.xensource.com/xen-extfiles/gc.tar.gz \
+    https://sourceforge.net/projects/tpm-emulator.berlios/files/tpm_emulator-0.7.4.tar.gz \
+    https://ftp.gnu.org/gnu/gmp/gmp-4.3.2.tar.bz2.sig \
+    https://polarssl.org/code/releases/polarssl-1.1.4-gpl.tgz \
+    https://xenbits.xensource.com/xen-extfiles/tboot-20090330.tar.gz
 
 ALL_FILES := $(notdir $(URLS:%.sig=%)) $(notdir $(filter %.sig, $(URLS)))
 ALL_URLS := $(URLS:%.sig=%) $(filter %.sig, $(URLS))
@@ -71,17 +68,17 @@ verify-sources:
 	@true
 
 $(filter %.sig, $(ALL_FILES)): %:
-	@wget --no-use-server-timestamps -q -O $@ $(filter %$@,$(ALL_URLS))
+	@$(FETCH_CMD) $@ $(filter %$@,$(ALL_URLS))
 
 %: %.sig $(keyring-file)
-	@wget --no-use-server-timestamps -q -O $@$(UNTRUSTED_SUFF) $(filter %$@,$(ALL_URLS))
+	@$(FETCH_CMD) $@$(UNTRUSTED_SUFF) $(filter %$@,$(ALL_URLS))
 	@gpgv --keyring vmm-xen-trustedkeys.gpg $< $@$(UNTRUSTED_SUFF) 2>/dev/null || \
 		{ echo "Wrong signature on $@$(UNTRUSTED_SUFF)!"; exit 1; }
 	@mv $@$(UNTRUSTED_SUFF) $@
 
 %: %.sha1sum
-	@wget --no-use-server-timestamps -q -O $@$(UNTRUSTED_SUFF) $(filter %$@,$(ALL_URLS))
-	@sha1sum --status -c $< <$@$(UNTRUSTED_SUFF) || \
+	@$(FETCH_CMD) $@$(UNTRUSTED_SUFF) $(filter %$@,$(ALL_URLS))
+	@sha1sum --strict --status -c $< <$@$(UNTRUSTED_SUFF) || \
 		{ echo "Wrong SHA1 checksum on $@$(UNTRUSTED_SUFF)!"; exit 1; }
 	@mv $@$(UNTRUSTED_SUFF) $@
 
