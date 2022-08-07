@@ -76,10 +76,10 @@ $(filter %.sig, $(ALL_FILES)): %:
 		{ echo "Wrong signature on $@$(UNTRUSTED_SUFF)!"; exit 1; }
 	@mv $@$(UNTRUSTED_SUFF) $@
 
-%: %.sha1sum
+%: %.sha256
 	@$(FETCH_CMD) $@$(UNTRUSTED_SUFF) $(filter %$@,$(ALL_URLS))
-	@sha1sum --strict --status -c $< <$@$(UNTRUSTED_SUFF) || \
-		{ echo "Wrong SHA1 checksum on $@$(UNTRUSTED_SUFF)!"; exit 1; }
+	@sha256sum --status -c <(printf "$$(cat $<)  -\n") <$@$(UNTRUSTED_SUFF) || \
+		{ echo "Wrong SHA256 checksum on $@$(UNTRUSTED_SUFF)!"; exit 1; }
 	@mv $@$(UNTRUSTED_SUFF) $@
 
 .PHONY: clean-sources
