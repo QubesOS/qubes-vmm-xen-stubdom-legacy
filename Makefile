@@ -23,7 +23,7 @@ URLS := \
     https://xenbits.xensource.com/xen-extfiles/gc.tar.gz \
     https://sourceforge.net/projects/tpm-emulator.berlios/files/tpm_emulator-0.7.4.tar.gz \
     https://ftp.gnu.org/gnu/gmp/gmp-4.3.2.tar.bz2.sig \
-    https://polarssl.org/code/releases/polarssl-1.1.4-gpl.tgz \
+    $(DISTFILES_MIRROR)/polarssl-1.1.4-gpl.tgz \
     https://xenbits.xensource.com/xen-extfiles/tboot-20090330.tar.gz
 
 ALL_FILES := $(notdir $(URLS:%.sig=%)) $(notdir $(filter %.sig, $(URLS)))
