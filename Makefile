@@ -2,9 +2,7 @@ DIST_DOM0 ?= fc32
 DISTFILES_MIRROR ?= https://ftp.qubes-os.org/distfiles/
 version := $(or $(file <version),$(error Cannot determine version))
 
-ifeq ($(FETCH_CMD),)
-$(error "You can not run this Makefile without having FETCH_CMD defined")
-endif
+FETCH_CMD ?= curl --proto '=https' --proto-redir '=https' --tlsv1.2 --http1.1 -sSfL -o
 
 all: help
 
